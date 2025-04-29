@@ -4,7 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h" // <-- Enhanced Input 관련 헤더
 #include "AbigailCharacter.generated.h"
+
+class UInputMappingContext;
+class UInputAction;
+class USpringArmComponent;
+class UCameraComponent;
+
 
 UCLASS()
 class ETERNAL_RETURN_API AAbigailCharacter : public ACharacter
@@ -28,18 +35,25 @@ public:
 
 private:
 
-	// 이동 함수
-	void MoveForward(float Value);
-	void MoveRight(float Value);
-
-	// 카메라 컨트롤 함수
+	// 입력 처리 함수
+	void Move(const FInputActionValue& Value);
 	void Turn(float Value);
 	void LookUp(float Value);
 
-	// 카메라 관련 컴포넌트
+	// 카메라 컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* SpringArm;
+	USpringArmComponent* SpringArm;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* Camera;
+	UCameraComponent* Camera;
+
+	// Enhanced Input 리소스
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputMappingContext* DefaultMappingContext;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* LookAction;
 };

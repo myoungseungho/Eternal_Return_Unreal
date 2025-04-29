@@ -4,37 +4,35 @@
 #include "AbigailCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GameFramework/Controller.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "GameFramework/Controller.h"
 
 // Sets default values
+// 생성자
 AAbigailCharacter::AAbigailCharacter()
 {
-    // Tick 활성화
     PrimaryActorTick.bCanEverTick = true;
 
-    // SpringArm 생성
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArm->SetupAttachment(RootComponent);
-    SpringArm->TargetArmLength = 300.0f; // 카메라 거리
-    SpringArm->bUsePawnControlRotation = true; // 마우스 방향에 따라 회전
+    SpringArm->TargetArmLength = 300.0f;
+    SpringArm->bUsePawnControlRotation = true;
 
-    // Camera 생성
     Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-    Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-    Camera->bUsePawnControlRotation = false; // Camera 자체는 회전하지 않음
+    Camera->SetupAttachment(SpringArm);
+    Camera->bUsePawnControlRotation = false;
 
-    // 이동 세팅 (선택사항)
-    GetCharacterMovement()->bOrientRotationToMovement = true; // 이동 방향을 따라 몸이 회전
-    bUseControllerRotationYaw = false; // 직접적인 캐릭터 회전은 끄기
-
+    // 이동/회전 설정
+    GetCharacterMovement()->bOrientRotationToMovement = true;
+    bUseControllerRotationYaw = false;
 }
 
 // Called when the game starts or when spawned
 void AAbigailCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -49,37 +47,27 @@ void AAbigailCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-    // 입력 바인딩
-    PlayerInputComponent->BindAxis("MoveForward", this, &AAbigailCharacter::MoveForward);
-    PlayerInputComponent->BindAxis("MoveRight", this, &AAbigailCharacter::MoveRight);
-    PlayerInputComponent->BindAxis("Turn", this, &AAbigailCharacter::Turn);
-    PlayerInputComponent->BindAxis("LookUp", this, &AAbigailCharacter::LookUp);
-
-}
-
-void AAbigailCharacter::MoveForward(float Value)
-{
-    if (Controller && Value != 0.0f)
+    if (UEnhancedInputComponent* Input = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
-        // 캐릭터가 바라보는 방향을 기준으로 전/후 이동
-        const FRotator Rotation = Controller->GetControlRotation();
-        const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-        const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-        AddMovementInput(Direction, Value);
+        Input->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAbigailCharacter::Move);
     }
 }
 
-void AAbigailCharacter::MoveRight(float Value)
+
+void AAbigailCharacter::Move(const FInputActionValue& Value)
 {
-    if (Controller && Value != 0.0f)
+    FVector2D Input = Value.Get<FVector2D>();
+
+    if (Controller && Input != FVector2D::ZeroVector)
     {
-        // 캐릭터가 바라보는 방향을 기준으로 좌/우 이동
         const FRotator Rotation = Controller->GetControlRotation();
         const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-        const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-        AddMovementInput(Direction, Value);
+        const FVector Forward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+        const FVector Right = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+        AddMovementInput(Forward, Input.Y);
+        AddMovementInput(Right, Input.X);
     }
 }
 
