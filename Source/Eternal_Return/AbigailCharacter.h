@@ -7,8 +7,6 @@
 #include "InputActionValue.h" // <-- Enhanced Input 관련 헤더
 #include "AbigailCharacter.generated.h"
 
-class UInputMappingContext;
-class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
 
@@ -29,31 +27,5 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-private:
-
-	// 입력 처리 함수
-	void Move(const FInputActionValue& Value);
-	void Turn(float Value);
-	void LookUp(float Value);
-
-	// 카메라 컴포넌트
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* SpringArm;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* Camera;
-
-	// Enhanced Input 리소스
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputMappingContext* DefaultMappingContext;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* MoveAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* LookAction;
 };
